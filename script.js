@@ -899,8 +899,14 @@ const confessInput = document.getElementById('confess-input');
 const confessSendBtn = document.getElementById('confess-send-btn');
 const chatHistory = document.getElementById('chat-history');
 
-const priestResponses = ["It's fine.", "You are absolved.", "You are a sinner.", "You are forgiven."];
-const confessImages = ["assets/confess1.png", "assets/confess2.png", "assets/confess3.png", "assets/confess4.png"];
+const priestResponses = [
+    "You are a sinner; no one will forgive you",
+    "You are forgiven.",
+    "You have been blessed.",
+    "Add more money to be blessed.",
+    "Do you think sins can be bought with money?"
+];
+const confessImages = ["assets/popup1.png", "assets/popup2.png", "assets/siggy.png"];
 
 function addChatMessage(sender, text, images = []) {
     const msgDiv = document.createElement('div');
@@ -923,42 +929,95 @@ function addChatMessage(sender, text, images = []) {
     setTimeout(() => chatHistory.scrollTop = chatHistory.scrollHeight, 50);
 }
 
+// --- New Confessional UI Handlers ---
+const confessionalBubble = document.getElementById('confessional-bubble');
+const confessionalModal = document.getElementById('confessional-modal');
+const closeConfessional = document.getElementById('close-confessional');
+const confessionChat = document.getElementById('confessional-chat');
+const confessionInputNew = document.getElementById('confession-input');
+const submitConfessionBtn = document.getElementById('submit-confession');
+
+function openConfessional() {
+    confessionalModal.classList.remove('hidden');
+    confessionalBubble.classList.add('hidden');
+}
+
+function closeConfessionalOverlay() {
+    confessionalModal.classList.add('hidden');
+    confessionalBubble.classList.remove('hidden');
+}
+
 function handleConfession() {
-    const text = confessInput.value.trim();
+    const text = confessionInputNew.value.trim();
     if (!text) return;
     
-    if (score < 10000) {
-        addChatMessage('system', "You need 10,000 Prayers to confess.");
+    if (score < 1000) {
+        addChatMessageNew('system', "You need 1,000 Prayers to confess.");
         return;
     }
     
     // Deduct
-    score -= 10000;
+    score -= 1000;
+    updateScoreUI(); // Assuming this function exists or update manually
     scoreEl.innerText = score.toLocaleString('en-US');
     localStorage.setItem('siggy_score', score);
     
     // User message
-    addChatMessage('user', text);
-    confessInput.value = '';
+    addChatMessageNew('user', text);
+    confessionInputNew.value = '';
     
     // Priest response
     setTimeout(() => {
-        const randomResp = priestResponses[Math.floor(Math.random() * priestResponses.length)];
+        const randomIndex = Math.floor(Math.random() * priestResponses.length);
+        const randomResp = priestResponses[randomIndex];
         
-        // Pick 1 random image out of 4
-        const shuffled = [...confessImages].sort(() => 0.5 - Math.random());
-        const selectedImages = shuffled.slice(0, 1);
+        // If it's the "sinner" response, maybe add a "sticker" (image)
+        let images = [];
+        if (randomIndex === 0) {
+            images = [confessImages[Math.floor(Math.random() * confessImages.length)]];
+        }
         
-        addChatMessage('priest', randomResp, selectedImages);
+        addChatMessageNew('priest', randomResp, images);
         
         // Play sound for divine intervention
-        initAudio();
-        playTempleSound();
+        if (typeof playTempleSound === 'function') playTempleSound();
     }, 1000);
 }
 
-confessSendBtn.addEventListener('click', handleConfession);
-confessInput.addEventListener('keypress', (e) => {
+function addChatMessageNew(sender, text, images = []) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = "flex flex-col gap-1 " + (sender === 'user' ? 'items-end' : 'items-start');
+    
+    let bubbleClass = "rounded-2xl p-4 max-w-[85%] leading-relaxed ";
+    if (sender === 'user') {
+        bubbleClass += "bg-[#D4AF37]/20 border border-[#D4AF37]/30 text-white rounded-tr-none";
+    } else if (sender === 'priest') {
+        bubbleClass += "bg-white/5 border border-white/10 text-slate-300 rounded-tl-none";
+    } else {
+        bubbleClass += "bg-red-500/10 border border-red-500/20 text-red-400 text-xs text-center self-center rounded-lg";
+    }
+
+    let contentHtml = `<div class="${bubbleClass}">${text}</div>`;
+    
+    if (images.length > 0) {
+        contentHtml += `<div class="flex gap-2 mt-1">`;
+        images.forEach(src => {
+            contentHtml += `<img src="${src}" class="w-20 h-20 rounded-lg border border-white/10 object-cover shadow-lg" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=siggy'">`;
+        });
+        contentHtml += `</div>`;
+    }
+
+    msgDiv.innerHTML = contentHtml;
+    confessionChat.appendChild(msgDiv);
+    
+    // Scroll to bottom
+    setTimeout(() => confessionChat.scrollTop = confessionChat.scrollHeight, 50);
+}
+
+if (confessionalBubble) confessionalBubble.addEventListener('click', openConfessional);
+if (closeConfessional) closeConfessional.addEventListener('click', closeConfessionalOverlay);
+if (submitConfessionBtn) submitConfessionBtn.addEventListener('click', handleConfession);
+confessionInputNew.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') handleConfession();
 });
 
