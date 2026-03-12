@@ -963,8 +963,9 @@ confessInput.addEventListener('keypress', (e) => {
 });
 
 // --- Telegram Bot Sync Logic (Option A: sendData) ---
-const tgSubmitContainer = document.getElementById('tg-submit-container');
 const tgSubmitBtn = document.getElementById('tg-submit-btn');
+const userNameEl = document.getElementById('user-name');
+const userAvatarEl = document.getElementById('user-avatar');
 
 // Initialize Telegram WebApp
 let tg = null;
@@ -977,9 +978,19 @@ if (window.Telegram && window.Telegram.WebApp) {
     tg.setHeaderColor('#0B1218');
     tg.setBackgroundColor('#000000');
 
+    // Populate User Profile
+    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        const user = tg.initDataUnsafe.user;
+        if (userNameEl) userNameEl.innerText = user.first_name || "Servant";
+        
+        if (userAvatarEl && user.photo_url) {
+            userAvatarEl.innerHTML = `<img src="${user.photo_url}" class="w-full h-full object-cover">`;
+        }
+    }
+
     // Show submit button only if in Telegram
-    if (tgSubmitContainer) {
-        tgSubmitContainer.classList.remove('hidden');
+    if (tgSubmitBtn) {
+        tgSubmitBtn.classList.remove('hidden');
     }
 }
 
