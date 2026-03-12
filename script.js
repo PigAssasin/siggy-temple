@@ -962,94 +962,43 @@ confessInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') handleConfession();
 });
 
-// --- Telegram Bot Sync Logic ---
-const tgTokenInput = document.getElementById('tg-bot-token');
-const tgChatIdInput = document.getElementById('tg-chat-id');
-const tgSaveBtn = document.getElementById('save-tg-config');
-
-let tgBotToken = localStorage.getItem('siggy_tg_token') || "";
-let tgChatId = localStorage.getItem('siggy_tg_chat_id') || "";
-let lastSyncedScore = parseInt(localStorage.getItem('siggy_last_synced_score')) || 0;
-
-if (tgTokenInput) tgTokenInput.value = tgBotToken;
-if (tgChatIdInput) tgChatIdInput.value = tgChatId;
+// --- Telegram Bot Sync Logic (Option A: sendData) ---
+const tgSubmitContainer = document.getElementById('tg-submit-container');
+const tgSubmitBtn = document.getElementById('tg-submit-btn');
 
 // Initialize Telegram WebApp
+let tg = null;
 if (window.Telegram && window.Telegram.WebApp) {
-    const tg = window.Telegram.WebApp;
+    tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
     
     // Set theme colors
     tg.setHeaderColor('#0B1218');
     tg.setBackgroundColor('#000000');
+
+    // Show submit button only if in Telegram
+    if (tgSubmitContainer) {
+        tgSubmitContainer.classList.remove('hidden');
+    }
 }
 
-async function syncScoreToTelegram(force = false) {
-    if (!tgBotToken || !tgChatId) return;
+function syncScoreToTelegram(force = false) {
+    if (!tg) return;
     
-    // Sync if score increased by 1000 or forced
-    if (!force && (score - lastSyncedScore < 1000)) return;
-
-    const message = `🙏 *Siggy Temple Update*\n\nUser has reached *${score.toLocaleString('en-US')}* Prayers!\n\nKeep praying at [Siggy Temple](https://t.me/your_bot_user_name/app)`;
+    // Use sendData for Option A
+    const message = `SiggyScore: ${score}`;
     
     try {
-        const response = await fetch(`https://api.telegram.org/bot${tgBotToken}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: tgChatId,
-                text: message,
-                parse_mode: 'Markdown'
-            })
-        });
-        
-        if (response.ok) {
-            lastSyncedScore = score;
-            localStorage.setItem('siggy_last_synced_score', lastSyncedScore);
-            console.log("Score synced to Telegram!");
-        }
+        tg.sendData(message);
+        console.log("Score sent via sendData!");
     } catch (error) {
-        console.error("Failed to sync score to Telegram:", error);
+        console.error("Failed to send data via Telegram:", error);
     }
 }
 
-// Debounced sync for inactivity
-let syncTimeout;
-function debouncedSync() {
-    clearTimeout(syncTimeout);
-    syncTimeout = setTimeout(() => syncScoreToTelegram(true), 3000); // Sync after 3s of inactivity
-}
-
-// Update handleInteraction to trigger sync
-const originalHandleInteraction = handleInteraction;
-handleInteraction = function(e) {
-    originalHandleInteraction(e);
-    debouncedSync();
-};
-
-if (tgSaveBtn) {
-    tgSaveBtn.addEventListener('click', () => {
-        tgBotToken = tgTokenInput.value.trim();
-        tgChatId = tgChatIdInput.value.trim();
-        
-        localStorage.setItem('siggy_tg_token', tgBotToken);
-        localStorage.setItem('siggy_tg_chat_id', tgChatId);
-        
-        const msg = document.getElementById('store-msg');
-        msg.style.color = '#10b981';
-        msg.innerText = "Telegram configuration saved!";
-        
-        // Initial sync test
+if (tgSubmitBtn) {
+    tgSubmitBtn.addEventListener('click', () => {
         syncScoreToTelegram(true);
-        
-        setTimeout(() => msg.innerText = '', 3000);
     });
 }
-
-// Sync on close/visibility change
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') {
-        syncScoreToTelegram(true);
-    }
-});
