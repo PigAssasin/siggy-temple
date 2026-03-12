@@ -7,13 +7,17 @@
   
   ---
 
-  ## 📥 ENTER THE TEMPLE 📥
+  ## ✨ 📥 ENTER THE TEMPLE 📥 ✨
   
+  <br/>
+
   <a href="https://t.me/SiggySayFukBot">
-    <img src="https://img.shields.io/badge/PLAY_ON_TELEGRAM-24A1DE?style=for-the-badge&logo=telegram&logoColor=white" height="50" />
+    <img src="assets/play_button_premium.png" alt="Play on Telegram" width="600" />
   </a>
+
+  <br/>
   
-  **[👉 Launch @SiggySayFukBot 👈](https://t.me/SiggySayFukBot)**
+  **✨ [👉 CLICK HERE TO LAUNCH @SiggySayFukBot 👈](https://t.me/SiggySayFukBot) ✨**
   
   *Join thousands of servants gathering prayers for Siggy.*
 
