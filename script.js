@@ -895,9 +895,13 @@ function handleQuizAnswer(idx, btnEl) {
 loadQuestion();
 
 // --- Confessional Game Logic ---
-const confessInput = document.getElementById('confess-input');
-const confessSendBtn = document.getElementById('confess-send-btn');
-const chatHistory = document.getElementById('chat-history');
+// --- Confessional Feature Logic ---
+const confessionalBubble = document.getElementById('confessional-bubble');
+const confessionalModal = document.getElementById('confessional-modal');
+const closeConfessional = document.getElementById('close-confessional');
+const confessionChat = document.getElementById('confessional-chat');
+const confessionInputNew = document.getElementById('confession-input');
+const submitConfessionBtn = document.getElementById('submit-confession');
 
 const priestResponses = [
     "You are a sinner; no one will forgive you",
@@ -907,16 +911,6 @@ const priestResponses = [
     "Do you think sins can be bought with money?"
 ];
 const confessImages = ["assets/popup1.png", "assets/popup2.png", "assets/siggy.png"];
-
-// --- Previous functions removed as they are replaced by addChatMessageNew and handleConfession ---
-
-// --- Confessional Feature Logic ---
-const confessionalBubble = document.getElementById('confessional-bubble');
-const confessionalModal = document.getElementById('confessional-modal');
-const closeConfessional = document.getElementById('close-confessional');
-const confessionChat = document.getElementById('confessional-chat');
-const confessionInputNew = document.getElementById('confession-input');
-const submitConfessionBtn = document.getElementById('submit-confession');
 
 function openConfessional() {
     if (confessionalModal) confessionalModal.classList.remove('hidden');
