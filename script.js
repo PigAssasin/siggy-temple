@@ -908,28 +908,9 @@ const priestResponses = [
 ];
 const confessImages = ["assets/popup1.png", "assets/popup2.png", "assets/siggy.png"];
 
-function addChatMessage(sender, text, images = []) {
-    const msgDiv = document.createElement('div');
-    msgDiv.classList.add('chat-msg', sender);
-    msgDiv.innerText = text;
-    
-    if (images.length > 0) {
-        const imgContainer = document.createElement('div');
-        imgContainer.classList.add('chat-images');
-        images.forEach(src => {
-            const imgEl = document.createElement('img');
-            imgEl.src = src;
-            imgContainer.appendChild(imgEl);
-        });
-        msgDiv.appendChild(imgContainer);
-    }
-    
-    chatHistory.appendChild(msgDiv);
-    // Scroll to bottom
-    setTimeout(() => chatHistory.scrollTop = chatHistory.scrollHeight, 50);
-}
+// --- Previous functions removed as they are replaced by addChatMessageNew and handleConfession ---
 
-// --- New Confessional UI Handlers ---
+// --- Confessional Feature Logic ---
 const confessionalBubble = document.getElementById('confessional-bubble');
 const confessionalModal = document.getElementById('confessional-modal');
 const closeConfessional = document.getElementById('close-confessional');
@@ -938,16 +919,17 @@ const confessionInputNew = document.getElementById('confession-input');
 const submitConfessionBtn = document.getElementById('submit-confession');
 
 function openConfessional() {
-    confessionalModal.classList.remove('hidden');
-    confessionalBubble.classList.add('hidden');
+    if (confessionalModal) confessionalModal.classList.remove('hidden');
+    if (confessionalBubble) confessionalBubble.classList.add('hidden');
 }
 
 function closeConfessionalOverlay() {
-    confessionalModal.classList.add('hidden');
-    confessionalBubble.classList.remove('hidden');
+    if (confessionalModal) confessionalModal.classList.add('hidden');
+    if (confessionalBubble) confessionalBubble.classList.remove('hidden');
 }
 
 function handleConfession() {
+    if (!confessionInputNew) return;
     const text = confessionInputNew.value.trim();
     if (!text) return;
     
@@ -958,8 +940,7 @@ function handleConfession() {
     
     // Deduct
     score -= 1000;
-    updateScoreUI(); // Assuming this function exists or update manually
-    scoreEl.innerText = score.toLocaleString('en-US');
+    if (scoreEl) scoreEl.innerText = score.toLocaleString('en-US');
     localStorage.setItem('siggy_score', score);
     
     // User message
@@ -971,7 +952,6 @@ function handleConfession() {
         const randomIndex = Math.floor(Math.random() * priestResponses.length);
         const randomResp = priestResponses[randomIndex];
         
-        // If it's the "sinner" response, maybe add a "sticker" (image)
         let images = [];
         if (randomIndex === 0) {
             images = [confessImages[Math.floor(Math.random() * confessImages.length)]];
@@ -979,12 +959,12 @@ function handleConfession() {
         
         addChatMessageNew('priest', randomResp, images);
         
-        // Play sound for divine intervention
         if (typeof playTempleSound === 'function') playTempleSound();
-    }, 1000);
+    }, 800);
 }
 
 function addChatMessageNew(sender, text, images = []) {
+    if (!confessionChat) return;
     const msgDiv = document.createElement('div');
     msgDiv.className = "flex flex-col gap-1 " + (sender === 'user' ? 'items-end' : 'items-start');
     
@@ -994,7 +974,7 @@ function addChatMessageNew(sender, text, images = []) {
     } else if (sender === 'priest') {
         bubbleClass += "bg-white/5 border border-white/10 text-slate-300 rounded-tl-none";
     } else {
-        bubbleClass += "bg-red-500/10 border border-red-500/20 text-red-400 text-xs text-center self-center rounded-lg";
+        bubbleClass += "bg-red-500/10 border border-red-500/20 text-red-400 text-[11px] text-center self-center px-4 py-1.5 rounded-lg";
     }
 
     let contentHtml = `<div class="${bubbleClass}">${text}</div>`;
@@ -1002,24 +982,24 @@ function addChatMessageNew(sender, text, images = []) {
     if (images.length > 0) {
         contentHtml += `<div class="flex gap-2 mt-1">`;
         images.forEach(src => {
-            contentHtml += `<img src="${src}" class="w-20 h-20 rounded-lg border border-white/10 object-cover shadow-lg" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=siggy'">`;
+            contentHtml += `<img src="${src}" class="w-16 h-16 rounded-lg border border-white/10 object-cover shadow-lg">`;
         });
         contentHtml += `</div>`;
     }
 
     msgDiv.innerHTML = contentHtml;
     confessionChat.appendChild(msgDiv);
-    
-    // Scroll to bottom
-    setTimeout(() => confessionChat.scrollTop = confessionChat.scrollHeight, 50);
+    confessionChat.scrollTop = confessionChat.scrollHeight;
 }
 
 if (confessionalBubble) confessionalBubble.addEventListener('click', openConfessional);
 if (closeConfessional) closeConfessional.addEventListener('click', closeConfessionalOverlay);
 if (submitConfessionBtn) submitConfessionBtn.addEventListener('click', handleConfession);
-confessionInputNew.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') handleConfession();
-});
+if (confessionInputNew) {
+    confessionInputNew.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleConfession();
+    });
+}
 
 // --- Telegram Bot Sync Logic (Option A: sendData) ---
 const tgSubmitBtn = document.getElementById('tg-submit-btn');
