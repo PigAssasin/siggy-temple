@@ -964,6 +964,7 @@ confessInput.addEventListener('keypress', (e) => {
 
 // --- Telegram Bot Sync Logic (Option A: sendData) ---
 const tgSubmitBtn = document.getElementById('tg-submit-btn');
+const xShareBtn = document.getElementById('x-share-btn');
 const userNameEl = document.getElementById('user-name');
 const userAvatarEl = document.getElementById('user-avatar');
 
@@ -1008,8 +1009,18 @@ function syncScoreToTelegram(force = false) {
     }
 }
 
+function shareToX() {
+    const text = `I achieved ${score.toLocaleString('en-US')} points at Siggy Temple. Join me at https://t.me/SiggySayFukBot. You are Siggy's servant`;
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+}
+
 if (tgSubmitBtn) {
     tgSubmitBtn.addEventListener('click', () => {
         syncScoreToTelegram(true);
     });
+}
+
+if (xShareBtn) {
+    xShareBtn.addEventListener('click', shareToX);
 }
